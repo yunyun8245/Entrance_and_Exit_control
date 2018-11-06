@@ -150,30 +150,32 @@ int main(void)
 
 			fclose(fp);
 
-
-			//--------------------------------------
-			//---filenameで指定したファイルへ出力---
-			//--------------------------------------
-			fopen_s(&fp, filename, "a");
-
-			for (int j = 0; j < 8;j++)
+			if (found == 1)
 			{
-				fprintf(fp, "%u", data[j]);
-				fprintf(fp, ",");
+				//--------------------------------------
+				//---filenameで指定したファイルへ出力---
+				//--------------------------------------
+				fopen_s(&fp, filename, "a");
+
+				for (int j = 0; j < 8;j++)
+				{
+					fprintf(fp, "%u", data[j]);
+					fprintf(fp, ",");
+				}
+
+				error = localtime_s(&imanojikan, &jikan);
+				printf("現在の日付・時刻を書き出しました。\n");
+				printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+
+				fprintf(fp, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+
+				fprintf(fp, "\n");//最後に改行
+				fclose(fp);
+				//ここまで
+
+				printf("\nFIN");
+				//scanf_s("%d", &t);
 			}
-
-			error = localtime_s(&imanojikan, &jikan);
-			printf("現在の日付・時刻を書き出しました。\n");
-			printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
-
-			fprintf(fp, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
-
-			fprintf(fp, "\n");//最後に改行
-			fclose(fp);
-			//ここまで
-
-			printf("\nFIN");
-			//scanf_s("%d", &t);
 		}
 	}
 	return EXIT_SUCCESS;
