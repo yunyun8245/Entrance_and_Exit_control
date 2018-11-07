@@ -20,7 +20,6 @@ int main(void)
 	FILE *fp, *fp_ex;
 	char filename[] = "LogData.csv";
 	char Datalist[] = "MemberData.csv";
-	char Data_in_room[] = "InRoom.csv";
 
 	int is_get;
 	int is_exist;
@@ -77,7 +76,7 @@ int main(void)
 		if (is_get == 1)
 		{
 			system("cls");
-
+			printf("\n-----------------------------------------------------\n");
 			fprintf(stdout, "number of cards: %d\n", number_of_cards);
 
 			char IDm[] = "card IDm:";
@@ -85,7 +84,8 @@ int main(void)
 
 			print_vector(IDm, card_idm, sizeof(card_idm));
 			print_vector(PMm, card_pmm, sizeof(card_pmm));
-
+			printf("-----------------------------------------------------\n");
+			
 			if (!close_reader_writer()) {
 				fprintf(stderr, "Can't close reader writer.\n");
 				scanf_s("%d", &t);
@@ -104,53 +104,53 @@ int main(void)
 			//表示できてるかの確認に使った
 			//fprintf(stdout, "ERRORPOINT: %02x\n",distination[6]);
 
-			char test[256];
+			int ret = 0, f_ret = -1;
+			int found = 0;
+			int data[10][9] = { 0 };
 
 			if (fopen_s(&fp, Datalist, "r") == EOF)
 			{
 				printf("ERROR");
 			}
 
-
-			int ret = 0, found = 0;
-			int data[8];
-
-			//--------------------------
-			//-データの比較をここで行う-
-			//--------------------------
-			while (true)
+			//--------------
+			//-データの取得-
+			//--------------
+			for (int num = 0; num < 10; num++)
 			{
-				found = 1;
+				ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
 
-				//データ読み取り
-				ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%s", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5], &data[6], &data[7]);
-				printf("%d,%u,%u,%u,%u,%u,%u,%u,%u\n", ret, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-
-				//データが最後までいったとき
 				if (ret == EOF)
 				{
-					found = 0;
+					//data[num][0] = -1;
+					printf("\n\nBREAK\n\n");
 					break;
 				}
 
-				//データ比較
-				for (int i = 0; i < 8;i++)
+				printf("%d,%u,%u,%u,%u,%u,%u,%u,%u,%d\n", ret, data[num][0], data[num][1], data[num][2], data[num][3], data[num][4], data[num][5], data[num][6], data[num][7], data[num][8]);
+
+			}
+			fclose(fp);
+
+			//----------
+			//-検索-
+			//----------
+			for (int i = 0 ; i < 10 ; i++)
+			{
+				found = 1;
+				for (int j = 0 ; j < 8 ; j++)
 				{
-					if (data[i] != card_idm[i])
+					if (data[i][j] != card_idm[j])
 					{
 						found = 0;
 					}
 				}
-
-				//データが一致したとき
 				if (found == 1)
 				{
+					f_ret = i;
 					break;
 				}
 			}
-			//--ここまで--
-			fclose(fp);
-
 
 			//IDが見つかったらfoundが1、なかったら0
 			if (found == 1)
@@ -159,74 +159,76 @@ int main(void)
 
 				//--------------------------
 				//-すでに入室しているか探す-
+				//data[8]が１なら入室してる-
 				//--------------------------
-				fopen_s(&fp_ex, Data_in_room, "a+");
-
-				while (true)
+				if (data[f_ret][8] == 0)
+				{
+					is_exist = 0;
+					data[f_ret][8] = 0x1;
+				}
+				else if (data[f_ret][8] == 1)
 				{
 					is_exist = 1;
-					//データ読み取り
-					ret = fscanf_s(fp_ex, "%u,%u,%u,%u,%u,%u,%u,%u,%s", &data[0], &data[1], &data[2], &data[3], &data[4], &data[5], &data[6], &data[7]);
-					printf("%d,%u,%u,%u,%u,%u,%u,%u,%u\n", ret, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
-
-					//データが最後までいったとき
-					if (ret == EOF)
-					{
-						is_exist = 0;
-						break;
-					}
-
-					//データ比較
-					for (int i = 0; i < 8;i++)
-					{
-						if (data[i] != card_idm[i])
-						{
-							is_exist = 0;
-						}
-					}
-
-					//データが一致したとき
-					if (is_exist == 1)
-					{
-						break;
-					}
+					data[f_ret][8] = 0x0;
+				}
+				else
+				{
+					is_exist = 0;
+					data[f_ret][8] = 0x1;
 				}
 				//--ここまで--
 
+				//is_existが0なら未入室→ログファイルへ書き出し
 				if (is_exist == 0)
 				{
 					//--------------------------------------
 					//---filenameで指定したファイルへ出力---
 					//--------------------------------------
-					fopen_s(&fp, filename, "a");
+					fopen_s(&fp_ex, filename, "a");
 
 					//ここはカードのID出力
 					for (int j = 0; j < 8;j++)
 					{
-						fprintf(fp, "%u", card_idm[j]);		//LogDataに保存
-						fprintf(fp_ex, "%u", card_idm[j]);	//InRoomに保存
-						fprintf(fp, ",");					//LogDataに保存
-						fprintf(fp_ex, ",");				//InRoomに保存
+						fprintf(fp_ex, "%u", card_idm[j]);		//LogDataに保存
+						fprintf(fp_ex, ",");					//LogDataに保存
 					}
 					//ここは時間の出力
 					error = localtime_s(&imanojikan, &jikan);
-					printf("現在の日付・時刻を書き出しました。\n");
+					printf("\n現在の日付・時刻を書き出しました。\n");
 					printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
-					fprintf(fp, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+					fprintf(fp_ex, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
-					fprintf(fp, "\n");						//最後に改行(LogData)
-					fclose(fp);
+					fprintf(fp_ex, "\n");						//最後に改行(LogData)
+					fclose(fp_ex);
 					//ここまで
+
+
+					if (fopen_s(&fp, Datalist, "w") == EOF)
+					{
+						printf("ERROR");
+					}
+
+					for (int i = 0 ; i < 10 ; i++)
+					{
+						for (int j = 0; j < 9; j++)
+						{
+							fprintf(fp, "%d", data[i][j]);		//LogDataに保存
+							fprintf(fp, ",");					//LogDataに保存
+						}
+						fprintf(fp, "\n");
+						if (i == f_ret) break;
+					}
+					fclose(fp);
+					
 				}
 				else if(is_exist == 1)
 				{
 					printf("\nYou are arleady in room\n");
 				}
-				fprintf(fp_ex, "\n");						//最後に改行(InRoom)
-				fclose(fp_ex);
+
 				printf("\nFIN");
-				sleep(2200);
+				sleep(2000);
 				//scanf_s("%d", &t);
 			}
 			else
