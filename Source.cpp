@@ -23,7 +23,6 @@ int main(void)
 	int is_get;
 	while (true)
 	{
-
 		time_t jikan = time(NULL);
 		struct tm imanojikan;
 		errno_t error;
@@ -31,6 +30,7 @@ int main(void)
 		is_get = 1;
 		//ライブラリの初期化
 		if (!initialize_library()) {
+			system("cls");
 			fprintf(stderr, "Can't initialize library.\n");
 			scanf_s("%d", &t);
 
@@ -60,6 +60,7 @@ int main(void)
 
 		//ポーリングとカード情報の取得(Polling コマンド)
 		if (!polling_and_get_card_information(&polling, &number_of_cards, &card_information)) {
+			system("cls");
 			fprintf(stderr, "Can't find FeliCa.\n");
 			error_routine();
 			//scanf_s("%d", &t);
@@ -70,6 +71,8 @@ int main(void)
 
 		if (is_get == 1)
 		{
+			system("cls");
+
 			fprintf(stdout, "number of cards: %d\n", number_of_cards);
 
 			char IDm[] = "card IDm:";
