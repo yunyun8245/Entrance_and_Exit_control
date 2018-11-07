@@ -104,7 +104,7 @@ int main(void)
 			//表示できてるかの確認に使った
 			//fprintf(stdout, "ERRORPOINT: %02x\n",distination[6]);
 
-			int ret = 0, f_ret = -1;
+			int ret = 0, f_ret = -1,lastdata = 0;
 			int found = 0;
 			int data[10][9] = { 0 };
 
@@ -123,6 +123,7 @@ int main(void)
 				if (ret == EOF)
 				{
 					//data[num][0] = -1;
+					lastdata = num;
 					printf("\n\nBREAK\n\n");
 					break;
 				}
@@ -209,7 +210,7 @@ int main(void)
 						printf("ERROR");
 					}
 
-					for (int i = 0 ; i < 10 ; i++)
+					for (int i = 0 ; i < lastdata; i++)
 					{
 						for (int j = 0; j < 9; j++)
 						{
@@ -217,7 +218,6 @@ int main(void)
 							fprintf(fp, ",");					//LogDataに保存
 						}
 						fprintf(fp, "\n");
-						if (i == f_ret) break;
 					}
 					fclose(fp);
 					
@@ -225,6 +225,46 @@ int main(void)
 				else if(is_exist == 1)
 				{
 					printf("\nYou are arleady in room\n");
+
+					//--------------------------------------
+					//---filenameで指定したファイルへ出力---
+					//--------------------------------------
+					fopen_s(&fp_ex, filename, "a");
+
+					//ここはカードのID出力
+					for (int j = 0; j < 8;j++)
+					{
+						fprintf(fp_ex, "%u", card_idm[j]);		//LogDataに保存
+						fprintf(fp_ex, ",");					//LogDataに保存
+					}
+					//ここは時間の出力
+					error = localtime_s(&imanojikan, &jikan);
+					printf("\n現在の日付・時刻を書き出しました。\n");
+					printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+
+					fprintf(fp_ex, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+
+					fprintf(fp_ex, "\n");						//最後に改行(LogData)
+					fclose(fp_ex);
+					//ここまで
+
+
+					if (fopen_s(&fp, Datalist, "w") == EOF)
+					{
+						printf("ERROR");
+					}
+
+					for (int i = 0; i < lastdata; i++)
+					{
+						for (int j = 0; j < 9; j++)
+						{
+							fprintf(fp, "%d", data[i][j]);		//LogDataに保存
+							fprintf(fp, ",");					//LogDataに保存
+						}
+						fprintf(fp, "\n");
+					}
+					fclose(fp);
+
 				}
 
 				printf("\nFIN");
