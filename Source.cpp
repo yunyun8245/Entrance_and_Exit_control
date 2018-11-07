@@ -9,6 +9,7 @@
 int main(void);
 void error_routine(void);
 void print_vector(char* title, unsigned char* vector, int length);
+int sleep(unsigned long);
 
 //**************
 //メイン処理
@@ -25,6 +26,7 @@ int main(void)
 	int is_exist;
 	while (true)
 	{
+		int code = sleep(200);                        /* 10秒停止 = 10000*/
 		time_t jikan = time(NULL);
 		struct tm imanojikan;
 		errno_t error;
@@ -219,16 +221,18 @@ int main(void)
 				}
 				else if(is_exist == 1)
 				{
-					printf("You are arleady in room\n");
+					printf("\nYou are arleady in room\n");
 				}
 				fprintf(fp_ex, "\n");						//最後に改行(InRoom)
 				fclose(fp_ex);
 				printf("\nFIN");
+				sleep(2200);
 				//scanf_s("%d", &t);
 			}
 			else
 			{
 				printf("\nNot found \n\n");
+				sleep(2000);
 			}
 		}
 	}
@@ -266,4 +270,20 @@ void print_vector(char* title, unsigned char* vector, int length)
 	}
 	fprintf(stdout, "%02x", vector[length - 1]);
 	fprintf(stdout, "\n");
+}
+
+/*********************************/
+/*--- xミリ秒経過するのを待つ ---*/
+/*--------sleep関数の定義--------*/
+/*********************************/
+int sleep(unsigned long x)
+{
+	clock_t  s = clock();
+	clock_t  c;
+
+	do {
+		if ((c = clock()) == (clock_t)-1)       /* エラー */
+			return (0);
+	} while (1000UL * (c - s) / CLOCKS_PER_SEC <= x);
+	return (1);
 }
