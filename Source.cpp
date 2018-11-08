@@ -17,12 +17,14 @@ int sleep(unsigned long);
 int main(void)
 {
 	int t;
-	FILE *fp, *fp_ex;
+	FILE *fp;
+	//アクセスするファイル
 	char filename[] = "LogData.csv";
 	char Datalist[] = "MemberData.csv";
 
 	int is_get;
 	int is_exist;
+
 	while (true)
 	{
 		int code = sleep(200);                        /* 10秒停止 = 10000*/
@@ -47,17 +49,18 @@ int main(void)
 		if (!open_reader_writer_auto()) {
 			fprintf(stderr, "Can't open reader writer.\n");
 			scanf_s("%d", &t);
-
 			return EXIT_FAILURE;
 		}
 
+
+		//----------------------
+		//-カード関係の変数宣言-
+		//----------------------
 		structure_polling polling;
 		unsigned char system_code[2] = { 0xff, 0xff };	//最初は0x00だった
 		polling.system_code = system_code;
 		polling.time_slot = 0x00;
-
 		unsigned char number_of_cards = 0;
-
 		structure_card_information card_information;
 		unsigned char card_idm[8];
 		unsigned char card_pmm[8];
@@ -67,10 +70,10 @@ int main(void)
 		//ポーリングとカード情報の取得(Polling コマンド)
 		if (!polling_and_get_card_information(&polling, &number_of_cards, &card_information)) {
 			system("cls");
+			printf("\n-----------------------------------------------------\n");
 			fprintf(stderr, "Can't find FeliCa.\n");
 			error_routine();
-			//scanf_s("%d", &t);
-
+			printf("-----------------------------------------------------\n");
 			is_get = 0;
 			//return EXIT_FAILURE;
 		}
@@ -78,28 +81,27 @@ int main(void)
 		if (is_get == 1)
 		{
 			system("cls");
-			printf("\n-----------------------------------------------------\n");
-			fprintf(stdout, "number of cards: %d\n", number_of_cards);
-
+			//----------------------
+			//-カード関係の変数宣言-
+			//----------------------
 			char IDm[] = "card IDm:";
 			char PMm[] = "card PMm:";
 
+			printf("\n-----------------------------------------------------\n");
+			fprintf(stdout, "number of cards: %d\n", number_of_cards);
 			print_vector(IDm, card_idm, sizeof(card_idm));
 			print_vector(PMm, card_pmm, sizeof(card_pmm));
 			printf("-----------------------------------------------------\n");
 			
+			//クローズする
 			if (!close_reader_writer()) {
 				fprintf(stderr, "Can't close reader writer.\n");
-				scanf_s("%d", &t);
-
 				return EXIT_FAILURE;
 			}
 
 			//ライブラリの解放
 			if (!dispose_library()) {
 				fprintf(stderr, "Can't dispose library.\n");
-				scanf_s("%d", &t);
-
 				return EXIT_FAILURE;
 			}
 
@@ -108,37 +110,42 @@ int main(void)
 
 			int ret = 0, f_ret = -1,lastdata = 0;
 			int found = 0;
-
+			
+			//---------------------------------------------------------------
+			//-ファイルをオープンする----------------------------------------
+			//-Datalis(MemberData.csv)に登録されているファイルをオープンする-
+			//---------------------------------------------------------------
 			if (fopen_s(&fp, Datalist, "r") == EOF)
 			{
 				printf("ERROR");
 			}
 
-			//--------------
-			//-データの取得-
-			//--------------
+			//------------------------------------------
+			//-データの取得(全部のデータをdata[]に取得)-
+			//------------------------------------------
 			for (int num = 0; num < 10; num++)
 			{
+				//データの取得
 				ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
 
+				//最後までいったらlastdataに最後のときのレコード数を保存する
 				if (ret == EOF)
 				{
-					//data[num][0] = -1;
 					lastdata = num;
-					printf("\n\nBREAK\n\n");
 					break;
 				}
-
+				//データの表示
 				printf("%d,%u,%u,%u,%u,%u,%u,%u,%u,%d\n", ret, data[num][0], data[num][1], data[num][2], data[num][3], data[num][4], data[num][5], data[num][6], data[num][7], data[num][8]);
-
 			}
+			//クローズ
 			fclose(fp);
 
-			//----------
-			//-検索-
-			//----------
+			//----------------------------------------------------------------
+			//-データの検索(data[]の一覧から、取得してきたcard_idm[]をさがす)-
+			//----------------------------------------------------------------
 			for (int i = 0 ; i < 10 ; i++)
 			{
+				//最初にfoundを1にしておく。data[]と比較して違ったら0をいれる。
 				found = 1;
 				for (int j = 0 ; j < 8 ; j++)
 				{
@@ -147,6 +154,9 @@ int main(void)
 						found = 0;
 					}
 				}
+
+				//全ての配列のデータが一致したらfoundは1のままなのでBreakする。
+				//f_retには一致したdata[]の添え字を保存しておく。
 				if (found == 1)
 				{
 					f_ret = i;
@@ -154,10 +164,12 @@ int main(void)
 				}
 			}
 
-			//IDが見つかったらfoundが1、なかったら0
+			//---------------------------------------
+			//-IDが見つかったらfoundが1、なかったら0-
+			//---------------------------------------
 			if (found == 1)
 			{
-				printf("\nFound your ID \n\n");
+				printf("\nFound your ID");
 
 				//--------------------------
 				//-すでに入室しているか探す-
@@ -178,69 +190,89 @@ int main(void)
 					is_exist = 0;
 					data[f_ret][8] = 0x1;
 				}
-				//--ここまで--
 
-				//is_existが0なら未入室→ログファイルへ書き出し
+				//------------------------------------------
+				//-入室しているかどうかでメッセージが変わる-
+				//------------------------------------------
+				int log_in_out = 0;
 				if (is_exist == 0)
 				{
-					printf("\nWellcom \n");
+					log_in_out = 1;
+					printf("\n\n------System Message------");
+					printf("\n\nHello !");
+					printf("\nRecord your Login data");
+					printf("\n\n--------------------------");
 				}
 				else if(is_exist == 1)
 				{
-					printf("\nYou are arleady in room\n");
+					log_in_out = 0;
+					printf("\n\n------System Message------");
+					printf("\n\nSee you agein !");
+					printf("\nRecord your Logout data");
+					printf("\n\n--------------------------");
 				}
 
-				//--------------------------------------
-				//---filenameで指定したファイルへ出力---
-				//--------------------------------------
-				fopen_s(&fp_ex, filename, "a");
+				//-----------------------------------------------
+				//-filenameで指定したファイル(LogData.csv)へ出力-
+				//-----------------------------------------------
+				fopen_s(&fp, filename, "a");
 
-				//ここはカードのID出力
+				//LoginかLogoutかのデータを出力
+				fprintf(fp, "%u", log_in_out);			//LogDataに保存
+				fprintf(fp, ",");						//LogDataに保存
+
+				//カードのID出力
 				for (int j = 0; j < 8;j++)
 				{
-					fprintf(fp_ex, "%u", card_idm[j]);		//LogDataに保存
-					fprintf(fp_ex, ",");					//LogDataに保存
+					fprintf(fp, "%u", card_idm[j]);			//LogDataに保存
+					fprintf(fp, ",");						//LogDataに保存
 				}
+
 				//ここは時間の出力
 				error = localtime_s(&imanojikan, &jikan);
-				printf("\n現在の日付・時刻を書き出しました。\n");
+				printf("\n\nLogDataに出力しました。");
 				printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
-				fprintf(fp_ex, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+				fprintf(fp, "%04d%02d%02d%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
-				fprintf(fp_ex, "\n");						//最後に改行(LogData)
-				fclose(fp_ex);
-				//ここまで
+				fprintf(fp, "\n");							//最後に改行(LogData)
+				fclose(fp);
 
-
-				if (fopen_s(&fp, Datalist, "w+") == EOF)
+				//--------------------------------------------------
+				//-Datalistで指定したファイル(MemberData.csv)へ出力-
+				//--------------------------------------------------
+				if (fopen_s(&fp, Datalist, "w") == EOF)
 				{
-					printf("ERROR");
+					printf("\nERROR");
 				}
 
+				//lastdataまでdata[]の中に入っているデータを書き出す
 				for (int i = 0; i < lastdata; i++)
 				{
 					for (int j = 0; j < 8; j++)
 					{
 						unsigned char distination = data[i][j];
-						fprintf(fp, "%u", distination);		//LogDataに保存
-						fprintf(fp, ",");					//LogDataに保存
-						printf("%u,",distination);
+						fprintf(fp, "%u", distination);		//MemberDataに保存
+						fprintf(fp, ",");					//MemberDataに保存
 					}
+
+					//ここで入室しているかどうかのデータdata[][8]を書き込む
 					fprintf(fp, "%u", data[i][8]);
 					fprintf(fp, "\n");
-					printf("\n");
 				}
-				fprintf(fp, "\n");
+				fprintf(fp, "\n");							//最後に改行(MemberData.csv)
 				fclose(fp);
 
 				printf("\nFIN");
+				printf("\n-----------------------------------------------------\n");
 				sleep(2000);
-				//scanf_s("%d", &t);
 			}
 			else
 			{
-				printf("\nNot found \n\n");
+				printf("\nNot found");
+				printf("\nFIN");
+				printf("\n-----------------------------------------------------\n");
+
 				sleep(2000);
 			}
 		}
