@@ -170,8 +170,8 @@ int main(void)
 
 				for (int j = 0; j < 8; j++)
 				{
-					fprintf(fp, "%u", card_idm[j]);		//LogData‚É•Û‘¶
-					fprintf(fp, ",");					//LogData‚É•Û‘¶
+					fprintf(fp, "%u", card_idm[j]);		//MemberData‚É•Û‘¶
+					fprintf(fp, ",");					//MemberData‚É•Û‘¶
 				}
 				unsigned char tt = 0;
 				fprintf(fp, "%u", tt);
