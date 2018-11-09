@@ -34,7 +34,7 @@ int main(void)
 		is_exist = 0;
 
 		is_get = 1;
-		int data[10][9] = { 0 };
+		int data[256][9] = { 0 };
 
 		//ライブラリの初期化
 		if (!initialize_library()) {
@@ -71,9 +71,9 @@ int main(void)
 		if (!polling_and_get_card_information(&polling, &number_of_cards, &card_information)) {
 			system("cls");
 			printf("\n-----------------------------------------------------\n");
-			fprintf(stderr, "Can't find FeliCa.\n");
+			fprintf(stderr, "Can't find FeliCa.");
 			error_routine();
-			printf("-----------------------------------------------------\n");
+			printf("\n-----------------------------------------------------\n");
 			is_get = 0;
 			//return EXIT_FAILURE;
 		}
@@ -123,7 +123,7 @@ int main(void)
 			//------------------------------------------
 			//-データの取得(全部のデータをdata[]に取得)-
 			//------------------------------------------
-			for (int num = 0; num < 10; num++)
+			for (int num = 0; num < 256; num++)
 			{
 				//データの取得
 				ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
@@ -143,7 +143,7 @@ int main(void)
 			//----------------------------------------------------------------
 			//-データの検索(data[]の一覧から、取得してきたcard_idm[]をさがす)-
 			//----------------------------------------------------------------
-			for (int i = 0 ; i < 10 ; i++)
+			for (int i = 0 ; i < 256 ; i++)
 			{
 				//最初にfoundを1にしておく。data[]と比較して違ったら0をいれる。
 				found = 1;
