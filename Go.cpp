@@ -4,56 +4,119 @@
 #include <cstdlib>
 #include <string.h>
 #include <time.h>
-#include "felica.h"
 
 int main(void);
-void error_routine(void);
-void print_vector(char* title, unsigned char* vector, int length);
 int sleep(unsigned long);
+int intcmp(int *a,int *b , int num);
+
+//---------------------------------------------------------------------------------------
+//***************************************************************************************
+//****************<NameSolutionに登録されているメンバーのレコードを抽出>*****************
+//***************************************************************************************
+//---------------------------------------------------------------------------------------
 
 //**************
 //メイン処理
 //**************
 int main(void)
 {
-	int t;
-	FILE *fp;
+	FILE *fp, *fp_logdata, *fp_dist;
 	//アクセスするファイル
 	char filename[] = "../LogData.csv";
-	char Datalist[] = "../MemberData.csv";
+	char Namelist[] = "../NameSolution.csv";
+	char Distfile[] = "../DistinationRecord.csv";
 
-	int data[256][9];
-	int Memberlist[256][9];
+	int Member[8];//NameSolutionから持ってきたデータをいれる
+	char Name[256];//NameSolutionからもってきた名前データ
 
-	int ret;
+	int data_log[8];//LogDataから持ってきたデータが入る
+	char date[256];//LogDataから持ってきた日付データが入る(※文字列として保存)
 
-	//
-	if (fopen_s(&fp, Datalist, "r") == EOF)
+	int ret_log;
+	int ret = 0;
+	int in_out = 0;//ログインかログアウトかの変数受け取る
+
+	//--------------------------------------------------------
+	//-データの取得＜NameSolution.csvから全員のデータを取得＞-
+	//--------------------------------------------------------
+	if (fopen_s(&fp, Namelist, "r") == EOF)
 	{
 		printf("ERROR");
 	}
 
-	//--------------
-	//-データの取得-
-	//--------------
-	for (int num = 0; num < 256; num++)
+	//NameSolutionの最後の行まで繰り返す
+	while (true)
 	{
-		ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
-
+		printf("\n--------------------------System message-------------------------\n");
+		ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%s", &Member[0], &Member[1], &Member[2], &Member[3], &Member[4], &Member[5], &Member[6], &Member[7], Name);
 		if (ret == EOF)
 		{
-			data[num][0] = -1;
 			break;
 		}
+		//取得データの表示
+		printf("\nSort data -> ID : [  %u,%u,%u,%u,%u,%u,%u,%u  ] ,NAME : [  %s  ]\n", Member[0], Member[1], Member[2], Member[3], Member[4], Member[5], Member[6], Member[7], Name);
+		//***Member[]にNameSolutionのカードIDが入っている/Nameに名前が入っている***
 
-		printf("%d,%u,%u,%u,%u,%u,%u,%u,%u,%u\n", ret, data[num][0], data[num][1], data[num][2], data[num][3], data[num][4], data[num][5], data[num][6], data[num][7], data[num][8]);
+		//---------------------------------------------
+		//-データの取得＜LogData.csvからデータを取得＞-
+		//---------------------------------------------
+		if (fopen_s(&fp_logdata, filename, "r") == EOF)
+		{
+			printf("ERROR");
+		}
+		ret_log = 0;
+		//LogData.csvの最後まで全部読む
+		while (ret_log != EOF)
+		{
+			ret_log = fscanf_s(fp_logdata, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%s", &in_out, &data_log[0], &data_log[1], &data_log[2], &data_log[3], &data_log[4], &data_log[5], &data_log[6], &data_log[7], date);
+			if (ret_log == EOF)
+			{
+				break;
+			}
 
+			//-----------------------------------------------------
+			//-データの出力＜DistinationRecord.csvにデータを出力＞-
+			//-----------------------------------------------------
+			if (fopen_s(&fp_dist, Distfile, "a") == EOF)
+			{
+				printf("ERROR");
+			}
+
+			//intcmpは比較して等しかったら０が返ってくる。等しくなかったら－１。
+			if (intcmp(data_log,Member,8) == 0) 
+			{
+				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %s", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], date);
+				
+				fprintf(fp_dist, "%s",Name);
+				fprintf(fp_dist, ",");
+
+				if (in_out == 0)
+				{
+					fprintf(fp_dist, "OUT");
+					fprintf(fp_dist, ",");
+				}
+				else if (in_out == 1)
+				{
+					fprintf(fp_dist, "IN");
+					fprintf(fp_dist, ",");
+				}
+
+				fprintf(fp_dist,"%s",date);
+				fprintf(fp_dist, "\n");
+			}
+			fclose(fp_dist);
+		}
+		fclose(fp_logdata);
+		printf("\n\n %s 's all data was imported.",Name);
+		printf("\n\n-----------------------------------------------------------------");
+		sleep(1500);
+		system("cls");//コンソールクリア
 	}
+
 	fclose(fp);
-
-
-
-
+	printf("\nFIN");
+	printf("\n\n-----------------------------------------------------------------");
+	sleep(4000);
 }
 
 /*********************************/
@@ -70,4 +133,19 @@ int sleep(unsigned long x)
 			return (0);
 	} while (1000UL * (c - s) / CLOCKS_PER_SEC <= x);
 	return (1);
+}
+
+
+//numは先頭から比較する数
+int intcmp(int *a, int *b, int num)
+{
+	int ans = 0;
+	for (int i = 0; i < num; i++)
+	{
+		if (a[i]!=b[i])
+		{
+			ans = -1;
+		}
+	}
+	return ans;
 }
