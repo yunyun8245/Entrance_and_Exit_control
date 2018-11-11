@@ -30,7 +30,9 @@ int main(void)
 	char Name[256];//NameSolutionからもってきた名前データ
 
 	int data_log[8];//LogDataから持ってきたデータが入る
-	char date[256];//LogDataから持ってきた日付データが入る(※文字列として保存)
+	int year;
+	int day;
+	int date;
 
 	int ret_log;
 	int ret = 0;
@@ -68,7 +70,7 @@ int main(void)
 		//LogData.csvの最後まで全部読む
 		while (ret_log != EOF)
 		{
-			ret_log = fscanf_s(fp_logdata, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%s", &in_out, &data_log[0], &data_log[1], &data_log[2], &data_log[3], &data_log[4], &data_log[5], &data_log[6], &data_log[7], date);
+			ret_log = fscanf_s(fp_logdata, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,%d", &in_out, &data_log[0], &data_log[1], &data_log[2], &data_log[3], &data_log[4], &data_log[5], &data_log[6], &data_log[7], &year, &day, &date);
 			if (ret_log == EOF)
 			{
 				break;
@@ -85,7 +87,7 @@ int main(void)
 			//intcmpは比較して等しかったら０が返ってくる。等しくなかったら－１。
 			if (intcmp(data_log,Member,8) == 0) 
 			{
-				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %s", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], date);
+				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %d %d %d", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], year, day, date);
 				
 				fprintf(fp_dist, "%s",Name);
 				fprintf(fp_dist, ",");
@@ -101,7 +103,7 @@ int main(void)
 					fprintf(fp_dist, ",");
 				}
 
-				fprintf(fp_dist,"%s",date);
+				fprintf(fp_dist, "%d,%d,%d", year, day, date);
 				fprintf(fp_dist, "\n");
 			}
 			fclose(fp_dist);
