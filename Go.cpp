@@ -24,7 +24,7 @@ int main(void)
 	//アクセスするファイル
 	char filename[] = "../LogData.csv";
 	char Namelist[] = "../NameSolution.csv";
-	char Distfile[] = "../DistinationRecord.csv";
+	char Distfile[256] = "../Record_";
 
 	int Member[8];//NameSolutionから持ってきたデータをいれる
 	char Name[256];//NameSolutionからもってきた名前データ
@@ -37,6 +37,46 @@ int main(void)
 	int ret_log;
 	int ret = 0;
 	int in_out = 0;//ログインかログアウトかの変数受け取る
+
+
+	//時間関係の変数
+	int code = sleep(200);                        /* 10秒停止 = 10000*/
+	time_t jikan = time(NULL);
+	struct tm imanojikan;
+	errno_t error;
+
+	//出力ファイルの名前を生成
+	error = localtime_s(&imanojikan, &jikan);
+	//printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+	int year_b= imanojikan.tm_year + 1900, month_b= imanojikan.tm_mon + 1, day_b= imanojikan.tm_mday, hour_b= imanojikan.tm_hour, min_b= imanojikan.tm_min;
+	char year_t[256];
+	char month_t[256];
+	char day_t[256];
+	char hour_t[256];
+	char min_t[256];
+	char csv[] = ".csv";
+	char bar[] = "-";
+	//文字列に変換
+	_itoa_s(year_b, year_t, sizeof(year_t), 10);
+	_itoa_s(month_b, month_t, sizeof(month_t), 10);
+	_itoa_s(day_b, day_t, sizeof(day_t), 10);
+	_itoa_s(hour_b, hour_t, sizeof(hour_t), 10);
+	_itoa_s(min_b, min_t, sizeof(min_t), 10);
+	
+	//名前にしていく
+	strcat_s(Distfile, year_t);
+	strcat_s(Distfile, bar);
+	strcat_s(Distfile, month_t);
+	strcat_s(Distfile, bar);
+	strcat_s(Distfile, day_t);
+	strcat_s(Distfile, bar);
+	strcat_s(Distfile, hour_t);
+	strcat_s(Distfile, bar);
+	strcat_s(Distfile, min_t);
+
+	//最後に.csvをつける
+	strcat_s(Distfile, csv);
+
 
 	//--------------------------------------------------------
 	//-データの取得＜NameSolution.csvから全員のデータを取得＞-
@@ -79,6 +119,7 @@ int main(void)
 			//-----------------------------------------------------
 			//-データの出力＜DistinationRecord.csvにデータを出力＞-
 			//-----------------------------------------------------
+
 			if (fopen_s(&fp_dist, Distfile, "a") == EOF)
 			{
 				printf("ERROR");
