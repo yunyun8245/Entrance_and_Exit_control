@@ -18,8 +18,8 @@ int main(void)
 {
 	int t;
 	FILE *fp;
-	char Datalist[] = "../MemberData.csv";
-	char Namelist[] = "../NameSolution.csv";
+	char Datalist[] = "../DataFiles/MemberData.csv";
+	char Namelist[] = "../DataFiles/NameSolution.csv";
 
 	int is_get;
 	int is_exist;

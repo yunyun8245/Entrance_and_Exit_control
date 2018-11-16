@@ -21,8 +21,8 @@ int main(void)
 	int t;
 	FILE *fp;
 	//アクセスするファイル
-	char filename[] = "../LogData.csv";
-	char Datalist[] = "../MemberData.csv";
+	char filename[] = "../DataFiles/LogData.csv";
+	char Datalist[] = "../DataFiles/MemberData.csv";
 
 	int is_get;
 	int is_exist;

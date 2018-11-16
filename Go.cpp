@@ -22,9 +22,9 @@ int main(void)
 {
 	FILE *fp, *fp_logdata, *fp_dist;
 	//アクセスするファイル
-	char filename[] = "../LogData.csv";
-	char Namelist[] = "../NameSolution.csv";
-	char Distfile[256] = "../Record_";
+	char filename[] = "../DataFiles/LogData.csv";
+	char Namelist[] = "../DataFiles/NameSolution.csv";
+	char Distfile[256] = "../RecordFiles/Record_";
 
 	int Member[8];//NameSolutionから持ってきたデータをいれる
 	char Name[256];//NameSolutionからもってきた名前データ
