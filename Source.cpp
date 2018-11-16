@@ -5,6 +5,8 @@
 #include <string.h>
 #include <time.h>
 #include "felica.h"
+#include <windows.h>
+#include <mmsystem.h>
 
 int main(void);
 void error_routine(void);
@@ -71,7 +73,8 @@ int main(void)
 		if (!polling_and_get_card_information(&polling, &number_of_cards, &card_information)) {
 			system("cls");
 			printf("\n-----------------------------------------------------\n");
-			fprintf(stderr, "Can't find FeliCa.");
+			//fprintf(stderr, "Can't find FeliCa.");
+			printf("\n **--  Please touch your IC card --** \n");
 			error_routine();
 			printf("\n-----------------------------------------------------\n");
 			is_get = 0;
@@ -117,7 +120,7 @@ int main(void)
 			//---------------------------------------------------------------
 			if (fopen_s(&fp, Datalist, "r") == EOF)
 			{
-				printf("ERROR");
+				printf("\n\n\n***-- Not found MemberData.csv --***\n\n\n");
 			}
 
 			//------------------------------------------
@@ -135,7 +138,7 @@ int main(void)
 					break;
 				}
 				//データの表示
-				printf("%d,%u,%u,%u,%u,%u,%u,%u,%u,%d\n", ret, data[num][0], data[num][1], data[num][2], data[num][3], data[num][4], data[num][5], data[num][6], data[num][7], data[num][8]);
+				//printf("%d,%u,%u,%u,%u,%u,%u,%u,%u,%d\n", ret, data[num][0], data[num][1], data[num][2], data[num][3], data[num][4], data[num][5], data[num][6], data[num][7], data[num][8]);
 			}
 			//クローズ
 			fclose(fp);
@@ -169,7 +172,10 @@ int main(void)
 			//---------------------------------------
 			if (found == 1)
 			{
-				printf("\nFound your ID");
+				
+				printf("\n  Found your ID  ");
+
+				//PlaySound("../wav/login.wav",NULL,SND_FILENAME);
 
 				//--------------------------
 				//-すでに入室しているか探す-
@@ -177,18 +183,24 @@ int main(void)
 				//--------------------------
 				if (data[f_ret][8] == 0)
 				{
+					//ログイン処理
 					is_exist = 0;
 					data[f_ret][8] = 0x1;
+					//PlaySound("../wav/login.wav",NULL,SND_FILENAME);
 				}
 				else if (data[f_ret][8] == 1)
 				{
+					//ログアウト処理
 					is_exist = 1;
 					data[f_ret][8] = 0x0;
+					//PlaySound("../wav/logout.wav",NULL,SND_FILENAME);
 				}
 				else
 				{
+					//エラー処理
 					is_exist = 0;
 					data[f_ret][8] = 0x1;
+					//PlaySound("../wav/error.wav",NULL,SND_FILENAME);
 				}
 
 				//------------------------------------------
@@ -198,18 +210,18 @@ int main(void)
 				if (is_exist == 0)
 				{
 					log_in_out = 1;
-					printf("\n\n------System Message------");
-					printf("\n\nHello !");
-					printf("\nRecord your Login data");
-					printf("\n\n--------------------------");
+					printf("\n\n-------System Message-------");
+					printf("\n\n       Hello !");
+					printf("\n\n  **-- Login success! --**");
+					printf("\n\n----------------------------");
 				}
 				else if(is_exist == 1)
 				{
 					log_in_out = 0;
-					printf("\n\n------System Message------");
-					printf("\n\nSee you agein !");
-					printf("\nRecord your Logout data");
-					printf("\n\n--------------------------");
+					printf("\n\n-------System Message-------");
+					printf("\n\n       See you agein !");
+					printf("\n\n  **-- Logout success! --**");
+					printf("\n\n----------------------------");
 				}
 
 				//-----------------------------------------------
@@ -230,8 +242,8 @@ int main(void)
 
 				//ここは時間の出力
 				error = localtime_s(&imanojikan, &jikan);
-				printf("\n\nLogDataに出力しました。");
-				printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+				printf("\n\n  **-- LogDataに出力しました --**");
+				printf("\n  %d年 %d月 %d日 %d時 %d分 %d秒 \n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
 				fprintf(fp, "%04d,%02d%02d,%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
@@ -262,18 +274,23 @@ int main(void)
 				}
 				fprintf(fp, "\n");							//最後に改行(MemberData.csv)
 				fclose(fp);
+				
+				if(is_exist == 0)		PlaySound("../wav/login.wav", NULL, SND_FILENAME);
+				else if(is_exist == 1)	PlaySound("../wav/logout.wav", NULL, SND_FILENAME);
+
 
 				printf("\nFIN");
 				printf("\n-----------------------------------------------------\n");
-				sleep(2000);
+				sleep(1500);
 			}
 			else
 			{
-				printf("\nNot found");
-				printf("\nFIN");
+				printf("\n  Not found your ID");
+				PlaySound("../wav/error.wav", NULL, SND_FILENAME);
+				printf("\n\nFIN");
 				printf("\n-----------------------------------------------------\n");
 
-				sleep(2000);
+				sleep(1500);
 			}
 		}
 	}
@@ -289,9 +306,9 @@ void error_routine(void)
 	enumernation_felica_error_type felica_error_type;
 	enumernation_rw_error_type rw_error_type;
 	get_last_error_types(&felica_error_type, &rw_error_type);
-	printf("felica_error_type: %d\n", felica_error_type);
-	printf("rw_error_type: %d\n", rw_error_type);
-
+	//printf("felica_error_type: %d\n", felica_error_type);
+	//printf("rw_error_type: %d\n", rw_error_type);
+	//普段は上二つのエラーメッセージ出すために//は消しておくこと
 	close_reader_writer();
 	dispose_library();
 }
