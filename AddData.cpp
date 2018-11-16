@@ -102,6 +102,9 @@ int main(void)
 
 			char IDm[] = "card IDm:";
 			char PMm[] = "card PMm:";
+			int ret = 0, f_ret = 0, found = 0;
+			int data[256][9] = { 0x0 };
+			char Name[256];
 
 			print_vector(IDm, card_idm, sizeof(card_idm));
 			print_vector(PMm, card_pmm, sizeof(card_pmm));
@@ -121,11 +124,6 @@ int main(void)
 				return EXIT_FAILURE;
 			}
 
-
-			int ret = 0, f_ret = 0, found = 0;
-			int data[256][9] = {0x0};
-			char Name[256];
-
 			if (fopen_s(&fp, Datalist, "r") == EOF)
 			{
 				printf("\nERROR");
@@ -140,7 +138,6 @@ int main(void)
 
 				if (ret == EOF)
 				{
-					data[num][0] = -1;
 					break;
 				}
 				//取得したデータの表示
