@@ -52,6 +52,13 @@ int main(void)
 	struct tm t_out;
 	int ans_day[5] = { 0 };
 	errno_t error;
+	t_in.tm_year = 0;
+	t_in.tm_mon = 0;
+	t_in.tm_mday = 0;
+	t_in.tm_hour = 0;
+	t_in.tm_min = 0;
+	t_in.tm_sec = 0;
+
 
 	error = localtime_s(&imanojikan, &jikan);
 
