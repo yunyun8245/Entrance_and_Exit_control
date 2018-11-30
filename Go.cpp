@@ -8,6 +8,8 @@
 int main(void);
 int sleep(unsigned long);
 int intcmp(int *a,int *b , int num);
+void calcsec(struct tm t1, struct tm t2, int *data);
+
 
 //---------------------------------------------------------------------------------------
 //***************************************************************************************
@@ -31,8 +33,11 @@ int main(void)
 
 	int data_log[8];//LogDataから持ってきたデータが入る
 	int year;
+	int month;
 	int day;
-	int date;
+	int hour;
+	int min;
+	int sec;
 
 	int ret_log;
 	int ret = 0;
@@ -43,10 +48,14 @@ int main(void)
 	int code = sleep(200);                        /* 10秒停止 = 10000*/
 	time_t jikan = time(NULL);
 	struct tm imanojikan;
+	struct tm t_in;
+	struct tm t_out;
+	int ans_day[5] = { 0 };
 	errno_t error;
 
-	//出力ファイルの名前を生成
 	error = localtime_s(&imanojikan, &jikan);
+
+	//出力ファイルの名前を生成
 	//printf("\n%d年 %d月 %d日 %d時 %d分 %d秒\n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 	int year_b= imanojikan.tm_year + 1900, month_b= imanojikan.tm_mon + 1, day_b= imanojikan.tm_mday, hour_b= imanojikan.tm_hour, min_b= imanojikan.tm_min;
 	char year_t[256];
@@ -110,7 +119,7 @@ int main(void)
 		//LogData.csvの最後まで全部読む
 		while (ret_log != EOF)
 		{
-			ret_log = fscanf_s(fp_logdata, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,%d", &in_out, &data_log[0], &data_log[1], &data_log[2], &data_log[3], &data_log[4], &data_log[5], &data_log[6], &data_log[7], &year, &day, &date);
+			ret_log = fscanf_s(fp_logdata, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%d,%d,%d,%d,%d,%d", &in_out, &data_log[0], &data_log[1], &data_log[2], &data_log[3], &data_log[4], &data_log[5], &data_log[6], &data_log[7], &year,&month, &day,&hour,&min, &sec);
 			if (ret_log == EOF)
 			{
 				break;
@@ -128,7 +137,7 @@ int main(void)
 			//intcmpは比較して等しかったら０が返ってくる。等しくなかったら－１。
 			if (intcmp(data_log,Member,8) == 0) 
 			{
-				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %d %d %d", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], year, day, date);
+				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %d %d %d %d %d %d", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], year, month, day, hour, min, sec);
 				
 				fprintf(fp_dist, "%s",Name);
 				fprintf(fp_dist, ",");
@@ -137,22 +146,46 @@ int main(void)
 				{
 					fprintf(fp_dist, "OUT");
 					fprintf(fp_dist, ",");
+					fprintf(fp_dist, "%d,%d,%d,%d,%d,%d", year, month, day, hour, min, sec);
+					fprintf(fp_dist, "\n");
+					//t_outにデータを入れる
+					t_out.tm_year = year;
+					t_out.tm_mon =month;
+					t_out.tm_mday =day;
+					t_out.tm_hour =hour;
+					t_out.tm_min =min;
+					t_out.tm_sec =sec;
+
+					calcsec(t_in, t_out, ans_day);
+					printf("\n         %d日 %d時間 %d分 %d秒",ans_day[0], ans_day[1], ans_day[2], ans_day[3]);
+
+					fprintf(fp_dist, "滞在時間,%d日,%d時間,%d分,%d秒", ans_day[0], ans_day[1], ans_day[2], ans_day[3]);
+					fprintf(fp_dist, "\n");
 				}
 				else if (in_out == 1)
 				{
 					fprintf(fp_dist, "IN");
 					fprintf(fp_dist, ",");
+					fprintf(fp_dist, "%d,%d,%d,%d,%d,%d", year, month, day, hour, min, sec);
+					fprintf(fp_dist, "\n");
+					//t_inにデータを入れる
+					t_in.tm_year = year;
+					t_in.tm_mon = month;
+					t_in.tm_mday = day;
+					t_in.tm_hour = hour;
+					t_in.tm_min = min;
+					t_in.tm_sec = sec;
 				}
 
-				fprintf(fp_dist, "%d,%d,%d", year, day, date);
-				fprintf(fp_dist, "\n");
+				//fprintf(fp_dist, "%d,%d,%d,%d,%d,%d", year, month, day, hour, min, sec);
+				//fprintf(fp_dist, "\n");
 			}
 			fclose(fp_dist);
 		}
 		fclose(fp_logdata);
 		printf("\n\n %s 's all data was imported.",Name);
 		printf("\n\n-----------------------------------------------------------------");
-		sleep(1500);
+		sleep(500);
 		system("cls");//コンソールクリア
 	}
 
@@ -192,3 +225,104 @@ int intcmp(int *a, int *b, int num)
 	}
 	return ans;
 }
+
+
+int is_leap_year(int year)
+{
+	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) ? 1 : 0;
+}
+
+void calcsec(struct tm t1,struct tm t2, int *data)
+{
+	int days_of_month[13] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	int yy_1 = t1.tm_year, mm_1 = t1.tm_mon, dd_1 = t1.tm_mday, hh_1 = t1.tm_hour, mn_1 = t1.tm_min, ss_1 = t1.tm_sec;
+	int yy_2 = t2.tm_year, mm_2 = t2.tm_mon, dd_2 = t2.tm_mday, hh_2 = t2.tm_hour, mn_2 = t2.tm_min, ss_2 = t2.tm_sec;
+	int leap_years = 0;
+	int days = 0;
+	int hour_ans = 0;
+	int min_ans = 0;
+	int sec_ans = 0;
+	int i;
+
+	/* うるう年の数 */
+	for (i = yy_1 + 1; i < yy_2; i++)
+	{
+		if (is_leap_year(i)) leap_years++;
+	}
+
+	/* yy_1-yy_2間の日数（yy_1, yy_2の年は含まない） */
+	if (yy_2 - yy_1 > 1)
+	{
+		days += (yy_2 - yy_1 - 1) * 365 + leap_years;
+	}
+
+	/* yy_1, yy_2の年の日数 */
+	/* 同じ年かどうかで振り分け */
+	if (yy_1 == yy_2)
+	{
+		/* 同じ月かどうかで振り分け */
+		if (mm_1 == mm_2)
+		{
+			days += dd_2 - dd_1;
+		}
+		else
+		{
+			if (is_leap_year(yy_1)) if ((mm_1 == 1 || mm_1 == 2) && mm_2 > 2) days++;
+			for (i = mm_1 + 1; i <= mm_2 - 1; i++) days += days_of_month[i];
+			days += days_of_month[mm_1] - dd_1;
+			days += dd_2;
+		}
+	}
+	/* if ( yy_1 != yy_2 ) */
+	else
+	{
+		if (is_leap_year(yy_1)) if (mm_1 == 1 || mm_1 == 2) days++;
+		if (is_leap_year(yy_2)) if (mm_2 > 2) days++;
+		for (i = mm_1 + 1; i <= 12; i++) days += days_of_month[i];
+		for (i = 1; i <= mm_2 - 1; i++) days += days_of_month[i];
+		days += days_of_month[mm_1] - dd_1;
+		days += dd_2;
+	}
+
+	if(hh_2-hh_1>0)
+	{
+		hour_ans += (hh_2 - hh_1);
+	}
+	else if (hh_2-hh_1<0)
+	{
+		days -= 1;
+		hour_ans += ((hh_2+24) - hh_1);
+	}
+
+	if (mn_2- mn_1>0)
+	{
+		min_ans += (mn_2 - mn_1);
+	}
+	else if (mn_2-mn_1<0)
+	{
+		hour_ans -= 1;
+		min_ans += ((mn_2 + 60) - mn_1);
+	}
+
+	if (ss_2 - ss_1>0)
+	{
+		sec_ans += (ss_2 - ss_1);
+	}
+	else if (ss_2 - ss_1<0)
+	{
+		min_ans -= 1;
+		sec_ans += ((ss_2 + 60) - ss_1);
+	}
+
+	//printf("\n\n\n\n%d 日\n", days);
+	//printf("\n%d 時間\n", hour_ans);
+	//printf("\n%d 分\n", min_ans);
+	//printf("\n%d 秒\n", sec_ans);
+
+	data[0] = days;
+	data[1] = hour_ans;
+	data[2] = min_ans;
+	data[3] = sec_ans;
+
+}
+

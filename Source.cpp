@@ -245,7 +245,7 @@ int main(void)
 				printf("\n\n  **-- LogData‚Éo—Í‚µ‚Ü‚µ‚½ --**");
 				printf("\n  %d”N %dŒ %d“ú %d %d•ª %d•b \n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
-				fprintf(fp, "%04d,%02d%02d,%02d%02d%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
+				fprintf(fp, "%04d,%02d,%02d,%02d,%02d,%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
 
 				fprintf(fp, "\n");							//ÅŒã‚É‰üs(LogData)
 				fclose(fp);
