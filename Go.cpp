@@ -123,6 +123,17 @@ int main(void)
 			printf("ERROR");
 		}
 		ret_log = 0;
+
+		//-----------------------------------------------------
+		//-データの出力＜DistinationRecord.csvにデータを出力＞-
+		//-----------------------------------------------------
+		if (fopen_s(&fp_dist, Distfile, "a") == EOF)
+		{
+			printf("ERROR");
+		}
+
+		int ex = 0;
+
 		//LogData.csvの最後まで全部読む
 		while (ret_log != EOF)
 		{
@@ -132,18 +143,10 @@ int main(void)
 				break;
 			}
 
-			//-----------------------------------------------------
-			//-データの出力＜DistinationRecord.csvにデータを出力＞-
-			//-----------------------------------------------------
-
-			if (fopen_s(&fp_dist, Distfile, "a") == EOF)
-			{
-				printf("ERROR");
-			}
-
 			//intcmpは比較して等しかったら０が返ってくる。等しくなかったら－１。
 			if (intcmp(data_log,Member,8) == 0) 
 			{
+				ex = 1;
 				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %d %d %d %d %d %d", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], year, month, day, hour, min, sec);
 				
 				fprintf(fp_dist, "%s",Name);
@@ -187,8 +190,9 @@ int main(void)
 				//fprintf(fp_dist, "%d,%d,%d,%d,%d,%d", year, month, day, hour, min, sec);
 				//fprintf(fp_dist, "\n");
 			}
-			fclose(fp_dist);
 		}
+		if(ex == 1)fprintf(fp_dist, "\n");
+		fclose(fp_dist);
 		fclose(fp_logdata);
 		printf("\n\n %s 's all data was imported.",Name);
 		printf("\n\n-----------------------------------------------------------------");
