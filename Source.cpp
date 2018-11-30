@@ -23,6 +23,7 @@ int main(void)
 	//アクセスするファイル
 	char filename[] = "../DataFiles/LogData.csv";
 	char Datalist[] = "../DataFiles/MemberData.csv";
+	char Namelist[] = "../DataFiles/NameSolution.csv";
 
 	int is_get;
 	int is_exist;
@@ -76,7 +77,7 @@ int main(void)
 			//fprintf(stderr, "Can't find FeliCa.");
 			printf("\n **--  Please touch your IC card --** \n");
 			error_routine();
-			printf("\n-----------------------------------------------------\n");
+			//printf("\n-----------------------------------------------------\n");
 			is_get = 0;
 			//return EXIT_FAILURE;
 		}
@@ -292,6 +293,72 @@ int main(void)
 
 				sleep(1500);
 			}
+		}
+		else if (is_get == 0)
+		{
+			int hoge[256] = { 0x0 };
+			char h_name[256] = { 0x0 };
+			printf("\n-----------* Member list *---------------------------\n");
+
+			//---------------------------------------------------------------
+			//-ファイルをオープンする----------------------------------------
+			//-Datalis(MemberData.csv)に登録されているファイルをオープンする-
+			//---------------------------------------------------------------
+			if (fopen_s(&fp, Datalist, "r") == EOF)
+			{
+				printf("\n\n\n***-- Not found MemberData.csv --***\n\n\n");
+			}
+
+			//------------------------------------------
+			//-データの取得(全部のデータをdata[]に取得)-
+			//------------------------------------------
+			int lastdata=0;
+			for (int num = 0; num < 256; num++)
+			{
+				//データの取得
+				int ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
+
+				//最後までいったらlastdataに最後のときのレコード数を保存する
+				if (ret == EOF)
+				{
+					lastdata = num;
+					break;
+				}
+			}
+			//クローズ
+			fclose(fp);
+
+
+			if (fopen_s(&fp, Namelist, "r") == EOF)
+			{
+				printf("\nERROR");
+			}
+
+			printf("\n   [ State]  Number   Name");
+			//printf("\n   [  %s  ]  No. %d : %s ");
+			for (int num = 0; num < lastdata; num++)
+			{
+				int ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%s", hoge, hoge, hoge, hoge, hoge, hoge, hoge, hoge, h_name);
+				if (ret == EOF)
+				{
+					break;
+				}
+				//取得したデータの表示
+				char inout[4];
+				if (data[num][8]==1)
+				{
+					strcpy_s(inout,"○");
+				}
+				else
+				{
+					strcpy_s(inout, "×");
+				}
+				printf("\n   [  %s  ]  No. %3d : %s ", inout, num + 1, h_name);
+			}
+			fclose(fp);
+			printf("\n\n-----------------------------------------------------");
+
+
 		}
 	}
 	return EXIT_SUCCESS;
