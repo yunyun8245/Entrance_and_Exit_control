@@ -670,11 +670,74 @@ void DeleteMem(int point)
 //変更++
 void ChangeMem(string data, int point)
 {
+	FILE *fp;
+	char Datalist[] = "../DataFiles/MemberData.csv";
+	char Namelist[] = "../DataFiles/NameSolution.csv";
+
+	int hoge[256][8] = { 0x0 };
+	char h_name[256] = { 0x0 };
+	char n_name[256][256] = { 0x0 };
+	int num, ret;
+	int breakpoint = 0;
+
+
 	system("cls");
 	printf("\n*-- ChangeManageを開きました");
 	cout <<endl<< "new_name : "<<data;
 
+	/*
+	//------------------------------------------------------------------
+	//-ファイルをオープンする-------------------------------------------
+	//-Namelist(NameSolution.csv)に登録されているファイルをオープンする-
+	//------------------------------------------------------------------
+	if (fopen_s(&fp, Namelist, "r") == EOF)
+	{
+		printf("\n\n\n***-- Not found NameSolution.csv --***\n\n\n");
+	}
+	for (num = 0; num < 256; num++)
+	{
+		printf("", num);//なぜかこれがあると動く
+		ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%s", &hoge[num][0], &hoge[num][1], &hoge[num][2], &hoge[num][3], &hoge[num][4], &hoge[num][5], &hoge[num][6], &hoge[num][7], h_name);
+		printf("\nret : %d", ret);
+		strcpy_s(n_name[num], h_name);
+		if (ret == EOF)
+		{
+			breakpoint = num;
+			fclose(fp);
+			printf("\n\n-----------------------------------------------");
+			break;
+		}
+	}
+	fclose(fp);
 
+	//------------------------------------------------------------------
+	//-ファイルをオープンする-------------------------------------------
+	//-Namelist(NameSolution.csv)に登録されているファイルをオープンする-
+	//------------------------------------------------------------------
+	if (fopen_s(&fp, Namelist, "w") == EOF)
+	{
+		printf("\n\n\n***-- Not found NameSolution.csv --***\n\n\n");
+	}
+	for (num = 0; num < 256; num++)
+	{
+		if (num == breakpoint) break;
+		//printf("\n No. %3d : %s ", num + 1, n_name[num]);
+		fprintf(fp, "%u,%u,%u,%u,%u,%u,%u,%u,", hoge[num][0], hoge[num][1], hoge[num][2], hoge[num][3], hoge[num][4], hoge[num][5], hoge[num][6], hoge[num][7]);
+
+		if (num + 1 != point)
+		{
+			fprintf(fp, "%s\n", n_name[num]);
+		}
+		else 
+		{
+			char testes[256];
+			strcpy_s(testes,data.c_str());
+			fprintf(fp, "%s\n", testes);
+		}
+	}
+	fclose(fp);
+
+	*/
 	cout << endl << endl << "CHANGE : " << point;
 }
 
