@@ -17,13 +17,13 @@ int sleep(unsigned long);
 int ShowMemberList();
 
 void MemberManage();
-void LogManage();
 
 void MemberInitialize();
 void MemberChange();
 void ChangeOrDelete(int point);
 void DeleteMem(int point);
 void ChangeMem(string data, int point);
+void LogClear();
 
 //**************
 //メイン処理☆++
@@ -49,7 +49,7 @@ int main(void)
 
 		string in_data;
 
-		cout << endl << "メインメニュー" <<endl<<" 1 : メンバーの管理"<<endl<<" 2 : ログデータの管理"<<endl<<" 入力 :";
+		cout << endl << "メインメニュー" <<endl<<" 1 : メンバーの管理"<<endl<<" 2 : ログデータの初期化"<<endl<<" 入力 :";
 		cin >> in_data;
 
 		if (in_data == "1")
@@ -59,263 +59,13 @@ int main(void)
 		}
 		else if (in_data == "2")
 		{
-			cout << endl << "ログデータの管理";
-			LogManage();
+			cout << endl << "ログデータの初期化";
+			LogClear();
 		}
 		else
 		{
 			cout << endl << "選択肢の数字を入力してください";
 		}
-		/*
-			int ret = 0, f_ret = -1,lastdata = 0;
-			int found = 0;
-			
-			//---------------------------------------------------------------
-			//-ファイルをオープンする----------------------------------------
-			//-Datalis(MemberData.csv)に登録されているファイルをオープンする-
-			//---------------------------------------------------------------
-			if (fopen_s(&fp, Datalist, "r") == EOF)
-			{
-				printf("\n\n\n***-- Not found MemberData.csv --***\n\n\n");
-			}
-
-			//------------------------------------------
-			//-データの取得(全部のデータをdata[]に取得)-
-			//------------------------------------------
-			for (int num = 0; num < 256; num++)
-			{
-				//データの取得
-				ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
-
-				//最後までいったらlastdataに最後のときのレコード数を保存する
-				if (ret == EOF)
-				{
-					lastdata = num;
-					break;
-				}
-				//データの表示
-				//printf("%d,%u,%u,%u,%u,%u,%u,%u,%u,%d\n", ret, data[num][0], data[num][1], data[num][2], data[num][3], data[num][4], data[num][5], data[num][6], data[num][7], data[num][8]);
-			}
-			//クローズ
-			fclose(fp);
-
-			//----------------------------------------------------------------
-			//-データの検索(data[]の一覧から、取得してきたcard_idm[]をさがす)-
-			//----------------------------------------------------------------
-			for (int i = 0 ; i < 256 ; i++)
-			{
-				//最初にfoundを1にしておく。data[]と比較して違ったら0をいれる。
-				found = 1;
-				for (int j = 0 ; j < 8 ; j++)
-				{
-					if (data[i][j] != card_idm[j])
-					{
-						found = 0;
-					}
-				}
-
-				//全ての配列のデータが一致したらfoundは1のままなのでBreakする。
-				//f_retには一致したdata[]の添え字を保存しておく。
-				if (found == 1)
-				{
-					f_ret = i;
-					break;
-				}
-			}
-
-			//---------------------------------------
-			//-IDが見つかったらfoundが1、なかったら0-
-			//---------------------------------------
-			if (found == 1)
-			{
-				
-				printf("\n  Found your ID  ");
-
-				//PlaySound("../wav/login.wav",NULL,SND_FILENAME);
-
-				//--------------------------
-				//-すでに入室しているか探す-
-				//data[8]が１なら入室してる-
-				//--------------------------
-				if (data[f_ret][8] == 0)
-				{
-					//ログイン処理
-					is_exist = 0;
-					data[f_ret][8] = 0x1;
-					//PlaySound("../wav/login.wav",NULL,SND_FILENAME);
-				}
-				else if (data[f_ret][8] == 1)
-				{
-					//ログアウト処理
-					is_exist = 1;
-					data[f_ret][8] = 0x0;
-					//PlaySound("../wav/logout.wav",NULL,SND_FILENAME);
-				}
-				else
-				{
-					//エラー処理
-					is_exist = 0;
-					data[f_ret][8] = 0x1;
-					//PlaySound("../wav/error.wav",NULL,SND_FILENAME);
-				}
-
-				//------------------------------------------
-				//-入室しているかどうかでメッセージが変わる-
-				//------------------------------------------
-				int log_in_out = 0;
-				if (is_exist == 0)
-				{
-					log_in_out = 1;
-					printf("\n\n-------System Message-------");
-					printf("\n\n       Hello !");
-					printf("\n\n  **-- Login success! --**");
-					printf("\n\n----------------------------");
-				}
-				else if(is_exist == 1)
-				{
-					log_in_out = 0;
-					printf("\n\n-------System Message-------");
-					printf("\n\n       See you agein !");
-					printf("\n\n  **-- Logout success! --**");
-					printf("\n\n----------------------------");
-				}
-
-				//-----------------------------------------------
-				//-filenameで指定したファイル(LogData.csv)へ出力-
-				//-----------------------------------------------
-				fopen_s(&fp, filename, "a");
-
-				//LoginかLogoutかのデータを出力
-				fprintf(fp, "%u", log_in_out);			//LogDataに保存
-				fprintf(fp, ",");						//LogDataに保存
-
-				//カードのID出力
-				for (int j = 0; j < 8;j++)
-				{
-					fprintf(fp, "%u", card_idm[j]);			//LogDataに保存
-					fprintf(fp, ",");						//LogDataに保存
-				}
-
-				//ここは時間の出力
-				error = localtime_s(&imanojikan, &jikan);
-				printf("\n\n  **-- LogDataに出力しました --**");
-				printf("\n  %d年 %d月 %d日 %d時 %d分 %d秒 \n", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
-
-				fprintf(fp, "%04d,%02d,%02d,%02d,%02d,%02d", imanojikan.tm_year + 1900, imanojikan.tm_mon + 1, imanojikan.tm_mday, imanojikan.tm_hour, imanojikan.tm_min, imanojikan.tm_sec);
-
-				fprintf(fp, "\n");							//最後に改行(LogData)
-				fclose(fp);
-
-				//--------------------------------------------------
-				//-Datalistで指定したファイル(MemberData.csv)へ出力-
-				//--------------------------------------------------
-				if (fopen_s(&fp, Datalist, "w") == EOF)
-				{
-					printf("\nERROR");
-				}
-
-				//lastdataまでdata[]の中に入っているデータを書き出す
-				for (int i = 0; i < lastdata; i++)
-				{
-					for (int j = 0; j < 8; j++)
-					{
-						unsigned char distination = data[i][j];
-						fprintf(fp, "%u", distination);		//MemberDataに保存
-						fprintf(fp, ",");					//MemberDataに保存
-					}
-
-					//ここで入室しているかどうかのデータdata[][8]を書き込む
-					fprintf(fp, "%u", data[i][8]);
-					fprintf(fp, "\n");
-				}
-				fprintf(fp, "\n");							//最後に改行(MemberData.csv)
-				fclose(fp);
-				
-				if(is_exist == 0)		PlaySound("../wav/login.wav", NULL, SND_FILENAME);
-				else if(is_exist == 1)	PlaySound("../wav/logout.wav", NULL, SND_FILENAME);
-
-
-				printf("\nFIN");
-				printf("\n-----------------------------------------------------\n");
-				sleep(1500);
-			}
-			else
-			{
-				printf("\n  Not found your ID");
-				PlaySound("../wav/error.wav", NULL, SND_FILENAME);
-				printf("\n\nFIN");
-				printf("\n-----------------------------------------------------\n");
-
-				sleep(1500);
-			}
-		}
-		else if (is_get == 0)
-		{
-			int hoge[256] = { 0x0 };
-			char h_name[256] = { 0x0 };
-			printf("\n-----------* Member list *---------------------------\n");
-
-			//---------------------------------------------------------------
-			//-ファイルをオープンする----------------------------------------
-			//-Datalis(MemberData.csv)に登録されているファイルをオープンする-
-			//---------------------------------------------------------------
-			if (fopen_s(&fp, Datalist, "r") == EOF)
-			{
-				printf("\n\n\n***-- Not found MemberData.csv --***\n\n\n");
-			}
-
-			//------------------------------------------
-			//-データの取得(全部のデータをdata[]に取得)-
-			//------------------------------------------
-			int lastdata=0;
-			for (int num = 0; num < 256; num++)
-			{
-				//データの取得
-				int ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%u", &data[num][0], &data[num][1], &data[num][2], &data[num][3], &data[num][4], &data[num][5], &data[num][6], &data[num][7], &data[num][8]);
-
-				//最後までいったらlastdataに最後のときのレコード数を保存する
-				if (ret == EOF)
-				{
-					lastdata = num;
-					break;
-				}
-			}
-			//クローズ
-			fclose(fp);
-
-
-			if (fopen_s(&fp, Namelist, "r") == EOF)
-			{
-				printf("\nERROR");
-			}
-
-			printf("\n   [ State]  Number   Name");
-			//printf("\n   [  %s  ]  No. %d : %s ");
-			for (int num = 0; num < lastdata; num++)
-			{
-				int ret = fscanf_s(fp, "%u,%u,%u,%u,%u,%u,%u,%u,%s", hoge, hoge, hoge, hoge, hoge, hoge, hoge, hoge, h_name);
-				if (ret == EOF)
-				{
-					break;
-				}
-				//取得したデータの表示
-				char inout[4];
-				if (data[num][8]==1)
-				{
-					strcpy_s(inout,"○");
-				}
-				else
-				{
-					strcpy_s(inout, "×");
-				}
-				printf("\n   [  %s  ]  No. %3d : %s ", inout, num + 1, h_name);
-			}
-			fclose(fp);
-			printf("\n\n-----------------------------------------------------");
-
-
-		}
-		*/
 	}
 	return 0;
 }
@@ -391,12 +141,50 @@ void MemberManage()
 
 }
 
-//ログの管理
-void LogManage()
+//ログデータの初期化☆++
+void LogClear()
 {
 	system("cls");
-	printf("\n*-- LogManageを開きました");
+	printf("\n*-- LogClearを開きました");
+	FILE *fp;
+	//アクセスするファイル
+	char filename[] = "../DataFiles/LogData.csv";
+
+	string y_n;
+	while (1)
+	{
+		cout << endl << endl << "本当に初期化してもよろしいですか？(y / n) : ";
+		cin >> y_n;
+
+		if (y_n == "y")
+		{
+			
+			//---------------------------------------------------------------
+			//-ファイルをオープンする----------------------------------------
+			//-Datalis(LogData.csv)に登録されているファイルをオープンする-
+			//---------------------------------------------------------------
+			if (fopen_s(&fp, filename, "w") == EOF)//wは上書き
+			{
+				printf("\n\n\n***-- Not found LogData.csv --***\n\n\n");
+			}
+			fclose(fp);
+			
+			cout << endl << "初期化しました";
+			break;
+		}
+		else if (y_n == "n")
+		{
+			cout << endl << "キャンセルしました";
+			break;
+		}
+		else
+		{
+			cout << endl << "選択肢にある数字を入力してください";
+		}
+	}
+
 }
+
 
 //メンバーの初期化++
 void MemberInitialize()
@@ -416,7 +204,7 @@ void MemberInitialize()
 
 		if (y_n == "y")
 		{
-			/*
+			
 			//---------------------------------------------------------------
 			//-ファイルをオープンする----------------------------------------
 			//-Datalis(MemberData.csv)に登録されているファイルをオープンする-
@@ -436,7 +224,7 @@ void MemberInitialize()
 			printf("\n\n\n***-- Not found NameSolution.csv --***\n\n\n");
 			}
 			fclose(fp);
-			*/
+			
 			cout << endl << "初期化しました";
 			break;
 		}
@@ -569,7 +357,7 @@ void DeleteMem(int point)
 	system("cls");
 	printf("\n*-- DeleteMemを開きました");
 
-	/*
+	
 	//------------------------------------------------------------------
 	//-ファイルをオープンする-------------------------------------------
 	//-Namelist(NameSolution.csv)に登録されているファイルをオープンする-
@@ -662,7 +450,7 @@ void DeleteMem(int point)
 	fclose(fp);
 
 	//*ここで２つめのファイルの変更終了*
-	*/
+	
 
 	cout << endl << endl << "DELETE : "<< point;
 }
@@ -685,7 +473,7 @@ void ChangeMem(string data, int point)
 	printf("\n*-- ChangeManageを開きました");
 	cout <<endl<< "new_name : "<<data;
 
-	/*
+	
 	//------------------------------------------------------------------
 	//-ファイルをオープンする-------------------------------------------
 	//-Namelist(NameSolution.csv)に登録されているファイルをオープンする-
@@ -737,7 +525,7 @@ void ChangeMem(string data, int point)
 	}
 	fclose(fp);
 
-	*/
+	
 	cout << endl << endl << "CHANGE : " << point;
 }
 
