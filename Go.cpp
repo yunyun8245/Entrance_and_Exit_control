@@ -149,15 +149,15 @@ int main(void)
 				ex = 1;
 				printf("\nRECORDED DATA -> ID : %u,%u,%u,%u,%u,%u,%u,%u  ,DATE  :  %d %d %d %d %d %d", data_log[0], data_log[1], data_log[2], data_log[3], data_log[4], data_log[5], data_log[6], data_log[7], year, month, day, hour, min, sec);
 				
-				fprintf(fp_dist, "%s",Name);
-				fprintf(fp_dist, ",");
+				//fprintf(fp_dist, "%s",Name);
+				//fprintf(fp_dist, ",");
 
 				if (in_out == 0)
 				{
 					fprintf(fp_dist, "OUT");
 					fprintf(fp_dist, ",");
-					fprintf(fp_dist, "%d,%d,%d,%d,%d,%d", year, month, day, hour, min, sec);
-					fprintf(fp_dist, "\n");
+					fprintf(fp_dist, "%d/%d/%d %d:%d:%d,", year, month, day, hour, min, sec);
+					//fprintf(fp_dist, "\n");
 					//t_outにデータを入れる
 					t_out.tm_year = year;
 					t_out.tm_mon =month;
@@ -169,15 +169,18 @@ int main(void)
 					calcsec(t_in, t_out, ans_day);
 					printf("\n         %d日 %d時間 %d分 %d秒",ans_day[0], ans_day[1], ans_day[2], ans_day[3]);
 
-					fprintf(fp_dist, "滞在時間,%d日,%d時間,%d分,%d秒", ans_day[0], ans_day[1], ans_day[2], ans_day[3]);
-					fprintf(fp_dist, "\n");
+					fprintf(fp_dist, "滞在時間,%d:%d:%d",  ans_day[1] + (24* ans_day[0]), ans_day[2], ans_day[3]);
+					//fprintf(fp_dist, "\n");
 				}
 				else if (in_out == 1)
 				{
+					fprintf(fp_dist, "\n");
+					fprintf(fp_dist, "%s", Name);
+					fprintf(fp_dist, ",");
 					fprintf(fp_dist, "IN");
 					fprintf(fp_dist, ",");
-					fprintf(fp_dist, "%d,%d,%d,%d,%d,%d", year, month, day, hour, min, sec);
-					fprintf(fp_dist, "\n");
+					fprintf(fp_dist, "%d/%d/%d %d:%d:%d,", year, month, day, hour, min, sec);
+					//fprintf(fp_dist, "\n");
 					//t_inにデータを入れる
 					t_in.tm_year = year;
 					t_in.tm_mon = month;
