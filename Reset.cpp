@@ -9,15 +9,14 @@
 #include <windows.h>
 #include <mmsystem.h>
 
+//nameスペースの宣言
 using namespace std;
 
+//関数のプロトタイプ宣言
 int main(void);
 int sleep(unsigned long);
-
 int ShowMemberList();
-
 void MemberManage();
-
 void MemberInitialize();
 void MemberChange();
 void ChangeOrDelete(int point);
@@ -43,9 +42,10 @@ int main(void)
 		struct tm imanojikan;
 		errno_t error;
 
+		//分岐に使う変数
 		int input_flag_1 = 0;
 
-		int code = sleep(200);                        /* 10秒停止 = 10000*/
+		int code = sleep(200);	/* 10秒停止 = 10000*/
 
 		string in_data;
 
@@ -184,7 +184,6 @@ void LogClear()
 	}
 
 }
-
 
 //メンバーの初期化++
 void MemberInitialize()
